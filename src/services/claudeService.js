@@ -15,7 +15,15 @@ export async function generateFlashcardsWithAI(theme, numberOfCards) {
   console.log('🚀 Chamando servidor local (não encontrado no cache)...');
   
   try {
-    const response = await fetch('http://localhost:3001/api/generate-flashcards', {
+    // Detectar se está em produção ou desenvolvimento
+    const isProduction = window.location.hostname !== 'localhost';
+    const apiUrl = isProduction 
+      ? '/api/generate-flashcards'  // Usar URL relativa em produção
+      : 'http://localhost:3001/api/generate-flashcards';  // URL completa em desenvolvimento
+    
+    console.log('🔗 URL da API:', apiUrl);
+    
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
