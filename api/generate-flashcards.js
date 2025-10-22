@@ -27,22 +27,23 @@ export default async function handler(req, res) {
     console.log(`🔍 Gerando ${numberOfCards} flashcards sobre: ${theme}`);
 
     // Gerar prompt para a IA
-    const prompt = `Você é um especialista em educação e criação de flashcards. Crie ${numberOfCards} flashcards sobre o tema "${theme}".
+    const prompt = `Crie ${numberOfCards} flashcards educativos sobre "${theme}".
 
-REQUISITOS:
+INSTRUÇÕES:
 - Crie exatamente ${numberOfCards} flashcards
-- Cada flashcard deve ter uma pergunta clara e uma resposta detalhada
-- As perguntas devem ser variadas (conceitos, definições, exemplos, aplicações)
-- As respostas devem ser educativas e completas
-- Use linguagem clara e acessível
-- Foque em conceitos importantes do tema
+- Cada flashcard deve ter uma pergunta específica e uma resposta detalhada
+- Foque em conceitos importantes, datas, pessoas, eventos, definições
+- Use linguagem clara e educativa
+- Seja específico sobre o tema "${theme}"
 
-FORMATO DE RESPOSTA (JSON):
+IMPORTANTE: Responda APENAS com o JSON, sem texto adicional.
+
+JSON:
 {
   "flashcards": [
     {
-      "question": "Pergunta do flashcard",
-      "answer": "Resposta detalhada"
+      "question": "Pergunta específica sobre ${theme}",
+      "answer": "Resposta detalhada e educativa"
     }
   ]
 }`;
@@ -75,17 +76,26 @@ FORMATO DE RESPOSTA (JSON):
     const content = data.content[0].text;
 
     // Extrair JSON da resposta
-    const jsonMatch = content.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('Resposta da IA não contém JSON válido');
+    console.log('📝 Resposta da IA:', content);
+    
+    // Tentar encontrar JSON na resposta
+    let jsonContent = content;
+    
+    // Remover texto antes e depois do JSON
+    const jsonStart = jsonContent.indexOf('{');
+    const jsonEnd = jsonContent.lastIndexOf('}') + 1;
+    
+    if (jsonStart !== -1 && jsonEnd > jsonStart) {
+      jsonContent = jsonContent.substring(jsonStart, jsonEnd);
     }
-
-    let jsonContent = jsonMatch[0];
+    
     let flashcards;
 
     try {
       flashcards = JSON.parse(jsonContent);
+      console.log('✅ JSON parseado com sucesso');
     } catch (firstError) {
+      console.log('⚠️ Erro no parsing, tentando corrigir...');
       try {
         // Tentar corrigir JSON malformado
         let fixedJson = jsonContent;
@@ -97,7 +107,9 @@ FORMATO DE RESPOSTA (JSON):
         fixedJson = fixedJson.replace(/(\w+)\s*\n\s*\}/g, '$1\n}');
         
         flashcards = JSON.parse(fixedJson);
+        console.log('✅ JSON corrigido e parseado');
       } catch (secondError) {
+        console.log('❌ JSON não pode ser parseado, usando fallback');
         // Fallback: criar flashcards básicos
         flashcards = {
           flashcards: Array.from({ length: numberOfCards }, (_, i) => ({
