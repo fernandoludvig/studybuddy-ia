@@ -9,7 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server.js"
+    "start": "node server.js",
+    "vercel-build": "vite build"
   },
   "dependencies": {
     "cors": "^2.8.5",
