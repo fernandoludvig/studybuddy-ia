@@ -1,16 +1,71 @@
-# React + Vite
+# StudyBuddy IA 🤖📚
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Uma plataforma completa de estudos com IA que gera planos personalizados, flashcards, timer Pomodoro e sistema de gamificação.
 
-Currently, two official plugins are available:
+## 🚀 Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **📋 Gerador de Planos de Estudo**: IA cria cronogramas personalizados
+- **🃏 Sistema de Flashcards**: Criação e estudo de flashcards
+- **⏰ Timer Pomodoro**: Técnica de produtividade integrada
+- **📊 Dashboard**: Acompanhamento de progresso e estatísticas
+- **🎮 Gamificação**: Sistema de XP, níveis e conquistas
+- **🎨 Interface Moderna**: Design glassmorphism responsivo
 
-## React Compiler
+## 🛠️ Tecnologias
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Frontend**: React + Vite + Tailwind CSS
+- **Backend**: Node.js + Express
+- **IA**: Anthropic Claude + OpenAI GPT
+- **Estado**: Zustand
+- **Animações**: Framer Motion
+- **Deploy**: Vercel
 
-## Expanding the ESLint configuration
+## ⚙️ Configuração
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. Variáveis de Ambiente
+
+No Vercel, adicione as seguintes variáveis de ambiente:
+
+```
+ANTHROPIC_API_KEY=sua_chave_da_anthropic
+OPENAI_API_KEY=sua_chave_da_openai (opcional)
+```
+
+### 2. Deploy no Vercel
+
+1. Conecte seu repositório GitHub ao Vercel
+2. Configure as variáveis de ambiente
+3. Deploy automático
+
+## 🎯 Como Usar
+
+1. **Crie um plano**: Informe matérias, sub-matérias, prazo e disponibilidade
+2. **Siga o cronograma**: Marque progresso e adicione notas
+3. **Use o Pomodoro**: Sessões de 25 minutos para produtividade
+4. **Estude com flashcards**: Crie e revise flashcards
+5. **Acompanhe progresso**: Dashboard com métricas e XP
+
+## 🔧 Desenvolvimento Local
+
+```bash
+# Instalar dependências
+npm install
+
+# Rodar frontend
+npm run dev
+
+# Rodar backend
+npm run server
+```
+
+## 📱 Demo
+
+Acesse: [https://studybuddy-ia.vercel.app/](https://studybuddy-ia.vercel.app/)
+
+## 🤝 Contribuição
+
+Contribuições são bem-vindas! Abra uma issue ou pull request.
+
+## 📄 Licença
+
+MIT License
