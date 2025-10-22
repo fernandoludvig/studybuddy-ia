@@ -1,9 +1,15 @@
 export async function generateStudyPlan(formData) {
   try {
-    console.log('🚀 Enviando requisição para:', 'http://localhost:3001/api/generate-study-plan');
+    // Detectar se está em produção ou desenvolvimento
+    const isProduction = window.location.hostname !== 'localhost';
+    const apiUrl = isProduction 
+      ? '/api/generate-study-plan'  // Usar URL relativa em produção
+      : 'http://localhost:3001/api/generate-study-plan';  // URL completa em desenvolvimento
+    
+    console.log('🚀 Enviando requisição para:', apiUrl);
     console.log('📦 Dados enviados:', formData);
     
-    const response = await fetch('http://localhost:3001/api/generate-study-plan', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
