@@ -1,18 +1,5 @@
-import useStore from '../store/useStore';
-
 export async function generateFlashcardsWithAI(theme, numberOfCards) {
-  const { getCachedResponse, setCachedResponse } = useStore.getState();
-  
-  // Verifica se já existe no cache
-  const cacheKey = `${theme.toLowerCase()}_${numberOfCards}`;
-  const cachedResponse = getCachedResponse(theme, numberOfCards);
-  
-  if (cachedResponse) {
-    console.log('🎯 Usando resposta do cache para:', theme);
-    return cachedResponse.flashcards;
-  }
-
-  console.log('🚀 Chamando servidor local (não encontrado no cache)...');
+  console.log('🚀 Gerando flashcards com IA para:', theme);
   
   try {
     // Detectar se está em produção ou desenvolvimento
@@ -42,11 +29,7 @@ export async function generateFlashcardsWithAI(theme, numberOfCards) {
     }
 
     const data = await response.json();
-    console.log('🎉 Flashcards gerados com Claude AI via servidor local!');
-    
-    // Salva no cache
-    setCachedResponse(theme, numberOfCards, data.flashcards);
-    console.log('💾 Resposta salva no cache!');
+    console.log('🎉 Flashcards gerados com Claude AI!');
     
     return data.flashcards;
   } catch (error) {
