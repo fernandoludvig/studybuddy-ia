@@ -662,29 +662,41 @@ export default function StudyPlanner() {
               <button
                 onClick={() => {
                   console.log('🎯 Botão Gerar Quiz clicado!');
-                  console.log('📊 CurrentPlan:', currentPlan);
+                  console.log('📊 CurrentPlan completo:', JSON.stringify(currentPlan, null, 2));
                   
-                  // Verificar se currentPlan existe e tem as propriedades necessárias
+                  // Verificar se currentPlan existe
                   if (!currentPlan) {
                     console.error('❌ CurrentPlan não existe');
                     alert('❌ Erro: Plano não encontrado');
                     return;
                   }
                   
-                  if (!currentPlan.subjects || currentPlan.subjects.length === 0) {
-                    console.error('❌ CurrentPlan não tem subjects');
-                    alert('❌ Erro: Plano não tem matérias definidas');
-                    return;
-                  }
+                  // Construir tópico de forma segura usando diferentes propriedades possíveis
+                  let topic = '';
                   
-                  // Construir tópico de forma segura
-                  let topic = currentPlan.subjects[0];
+                  // Tentar diferentes propriedades que podem conter as matérias
+                  if (currentPlan.subjects && currentPlan.subjects.length > 0) {
+                    topic = currentPlan.subjects[0];
+                  } else if (currentPlan.subject && currentPlan.subject.length > 0) {
+                    topic = currentPlan.subject[0];
+                  } else if (currentPlan.materias && currentPlan.materias.length > 0) {
+                    topic = currentPlan.materias[0];
+                  } else if (currentPlan.title) {
+                    // Usar o título do plano como fallback
+                    topic = currentPlan.title;
+                  } else {
+                    topic = 'História do Brasil';
+                  }
                   
                   // Tentar adicionar tópico específico se disponível
                   if (currentPlan.schedule && currentPlan.schedule.length > 0 && 
                       currentPlan.schedule[0].days && currentPlan.schedule[0].days.length > 0 &&
                       currentPlan.schedule[0].days[0].topics && currentPlan.schedule[0].days[0].topics.length > 0) {
                     topic += ' - ' + currentPlan.schedule[0].days[0].topics[0];
+                  } else if (currentPlan.schedule && currentPlan.schedule.length > 0 && 
+                      currentPlan.schedule[0].days && currentPlan.schedule[0].days.length > 0 &&
+                      currentPlan.schedule[0].days[0].subjects && currentPlan.schedule[0].days[0].subjects.length > 0) {
+                    topic += ' - ' + currentPlan.schedule[0].days[0].subjects[0];
                   } else {
                     topic += ' - Geral';
                   }
