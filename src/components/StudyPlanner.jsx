@@ -750,8 +750,12 @@ export default function StudyPlanner() {
                     });
                   }
                   
+                  console.log('📚 Matérias encontradas:', Array.from(allSubjects));
+                  console.log('📖 Tópicos encontrados:', Array.from(allTopics));
+                  
                   // Se há múltiplas matérias, mostrar seleção
                   if (allSubjects.size > 1) {
+                    console.log('🔍 Múltiplas matérias detectadas, mostrando seleção');
                     const quizOptions = Array.from(allSubjects).map(subject => {
                       // Encontrar tópicos relacionados a esta matéria
                       const relatedTopics = Array.from(allTopics).filter(topic => 
@@ -765,11 +769,12 @@ export default function StudyPlanner() {
                       };
                     });
                     
+                    console.log('📋 Opções de quiz:', quizOptions);
                     setAvailableQuizzes(quizOptions);
                     setShowQuizSelection(true);
                   } else {
                     // Se há apenas uma matéria, gerar quiz diretamente
-                    const subject = Array.from(allSubjects)[0] || 'Geral';
+                    const subject = Array.from(allSubjects)[0] || 'História';
                     const topic = Array.from(allTopics)[0] || 'Geral';
                     const quizTopic = `${subject} - ${topic}`;
                     console.log('📝 Tópico gerado (única matéria):', quizTopic);

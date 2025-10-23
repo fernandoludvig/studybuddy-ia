@@ -31,7 +31,9 @@ export default async function handler(req, res) {
     const weeks = Math.max(1, Math.ceil(daysUntilExam / 7));
 
     // Gerar prompt para a IA
-    const prompt = `Você é um especialista em educação e planejamento de estudos. Crie um plano de estudos detalhado e personalizado.
+    const prompt = `Você é um especialista em educação e planejamento de estudos. Crie um plano de estudos detalhado e personalizado EM PORTUGUÊS BRASILEIRO.
+
+IMPORTANTE: Responda APENAS em PORTUGUÊS. Todos os textos, títulos, dias da semana e conteúdo devem estar em português brasileiro.
 
 INFORMAÇÕES DO ESTUDANTE:
 - Matérias: ${subjects}
@@ -43,12 +45,12 @@ ${subSubjects ? `- Sub-matérias/Tópicos específicos: ${subSubjects}` : ''}
 - Semanas disponíveis: ${weeks}
 
 CRIE UM PLANO COM:
-- Título motivacional e personalizado
-- Visão geral do plano
-- Cronograma semanal (${weeks} semanas)
+- Título motivacional e personalizado EM PORTUGUÊS
+- Visão geral do plano EM PORTUGUÊS
+- Cronograma semanal (${weeks} semanas) com dias da semana em português
 - Distribuição equilibrada das matérias
 - Tópicos específicos para estudar (use as sub-matérias quando fornecidas)
-- Dicas personalizadas baseadas no objetivo
+- Dicas personalizadas baseadas no objetivo EM PORTUGUÊS
 - Estrutura de revisão
 - Estratégias de estudo adaptadas à dificuldade
 
@@ -59,17 +61,17 @@ ${subSubjects ? `- Use as sub-matérias fornecidas para criar tópicos mais espe
 
 FORMATO DE RESPOSTA (JSON):
 {
-  "title": "Título do Plano",
-  "overview": "Descrição geral",
+  "title": "Título do Plano em Português",
+  "overview": "Descrição geral em português",
   "schedule": [
     {
       "week": 1,
-      "focus": "Foco da semana",
+      "focus": "Foco da semana em português",
       "days": [
         {
           "day": "Segunda-feira",
-          "subjects": ["Matéria"],
-          "topics": ["Tópico 1", "Tópico 2"],
+          "subjects": ["Matéria em português"],
+          "topics": ["Tópico 1 em português", "Tópico 2 em português"],
           "duration": "2h",
           "completed": false
         }
@@ -77,9 +79,9 @@ FORMATO DE RESPOSTA (JSON):
     }
   ],
   "tips": [
-    "Dica 1",
-    "Dica 2",
-    "Dica 3"
+    "Dica 1 em português",
+    "Dica 2 em português",
+    "Dica 3 em português"
   ]
 }`;
 
