@@ -45,6 +45,8 @@ INSTRUÇÕES:
 - Use linguagem adequada para estudantes brasileiros
 - Varie o nível de dificuldade das questões
 - Inclua uma explicação educativa para cada questão
+- Foque especificamente no contexto histórico da Independência do Brasil (1822)
+- Se o tópico mencionar "Independência do Brasil", foque nos aspectos históricos, políticos e sociais desse período
 
 IMPORTANTE: Responda APENAS com o JSON, sem texto adicional.
 

@@ -1048,7 +1048,14 @@ export default function StudyPlanner() {
                                       onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        const topic = day.topics[0] || day.subjects[0] || 'Tópico do dia';
+                                        // Usar o tópico específico do dia, mas garantir que seja sobre Independência do Brasil
+                                        let topic = day.topics[0] || day.subjects[0] || 'Tópico do dia';
+                                        
+                                        // Se o tópico não contém "Independência do Brasil", adicionar contexto
+                                        if (!topic.toLowerCase().includes('independência') && !topic.toLowerCase().includes('brasil')) {
+                                          topic = `Independência do Brasil - ${topic}`;
+                                        }
+                                        
                                         console.log('🎯 Gerar Quiz do Dia:', topic);
                                         generateQuiz(topic, 5); // 5 questões para quiz do dia
                                       }}
