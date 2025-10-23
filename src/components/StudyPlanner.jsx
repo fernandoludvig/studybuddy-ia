@@ -1042,33 +1042,6 @@ export default function StudyPlanner() {
                                         Adicionar nota
                                       </button>
                                     )}
-                                    
-                                    {/* Botão Gerar Quiz do Dia */}
-                                    <button
-                                      onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        // Usar o tópico específico do dia, mas garantir que seja sobre Independência do Brasil
-                                        let topic = day.topics[0] || day.subjects[0] || 'Tópico do dia';
-                                        
-                                        // Se o tópico não contém "Independência do Brasil", adicionar contexto
-                                        if (!topic.toLowerCase().includes('independência') && !topic.toLowerCase().includes('brasil')) {
-                                          topic = `Independência do Brasil - ${topic}`;
-                                        }
-                                        
-                                        console.log('🎯 Gerar Quiz do Dia:', topic);
-                                        generateQuiz(topic, 5); // 5 questões para quiz do dia
-                                      }}
-                                      className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-2 px-3 py-2 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 border border-indigo-500/30"
-                                      disabled={quizLoading}
-                                    >
-                                      {quizLoading ? (
-                                        <Loader2 size={14} className="animate-spin" />
-                                      ) : (
-                                        <HelpCircle size={14} />
-                                      )}
-                                      Gerar Quiz (5 questões)
-                                    </button>
                                   </div>
                                 </div>
                               </div>
