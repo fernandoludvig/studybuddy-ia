@@ -529,10 +529,10 @@ export default function StudyPlanner() {
           
           <div id={`plan-${currentPlan.id}`} className="export-container">
             <h2 className="text-3xl font-bold mb-2">{currentPlan.title}</h2>
-            <p className="text-gray-300 mb-6">{currentPlan.overview}</p>
+            <p className="text-gray-300 mb-4">{currentPlan.overview}</p>
 
             {/* Progresso geral */}
-            <div className="mb-6">
+            <div className="mb-4">
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium">Progresso Total</span>
                 <span className="text-sm font-medium">{progress}%</span>
@@ -547,7 +547,7 @@ export default function StudyPlanner() {
             </div>
 
             {/* Estatísticas */}
-            <div className="grid grid-cols-4 gap-4 mb-4">
+            <div className="grid grid-cols-4 gap-4 mb-2">
               <div className="bg-white/5 rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold text-indigo-400">{currentPlan.schedule.length}</div>
                 <div className="text-sm text-gray-400">Semanas</div>
@@ -575,7 +575,7 @@ export default function StudyPlanner() {
         </motion.div>
 
         {/* Cronograma por semana */}
-        <div className="space-y-2">
+        <div className="space-y-1">
           {currentPlan.schedule.map((week, weekIndex) => {
             const isExpanded = expandedWeeks.includes(weekIndex);
             const weekCompleted = week.days.every(d => d.completed);
