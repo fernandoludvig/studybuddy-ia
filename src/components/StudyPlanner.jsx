@@ -60,7 +60,7 @@ export default function StudyPlanner() {
       const plan = await generateStudyPlan(formData);
       addStudyPlan(plan);
       setCurrentPlan(plan);
-      addXP(100);
+      addXP(100, 'study_plan_created');
       setView('plan');
     } catch (error) {
       console.error('Erro ao gerar plano:', error);

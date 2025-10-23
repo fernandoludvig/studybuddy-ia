@@ -50,7 +50,7 @@ export default function Flashcards() {
     setNewDeckName('');
     setNewDeckColor('#8b5cf6');
     setShowDeckCreator(false);
-    addXP(10);
+    addXP(10, 'deck_created');
   };
 
   // Gerar flashcards
@@ -83,7 +83,7 @@ export default function Flashcards() {
       
       setTheme('');
       setShowGenerator(false);
-      addXP(50);
+      addXP(50, 'flashcards_generated');
       alert(`🎉 ${generatedCards.length} flashcards adicionados ao deck "${selectedDeck.name}"!`);
       setView('cards');
     } catch (error) {
@@ -118,7 +118,7 @@ export default function Flashcards() {
     setManualQuestion('');
     setManualAnswer('');
     setShowManualCreator(false);
-    addXP(5);
+    addXP(5, 'flashcard_manual');
     alert(`✅ Card adicionado ao deck "${selectedDeck.name}"!`);
   };
 
@@ -139,7 +139,7 @@ export default function Flashcards() {
   const handleDifficulty = (difficulty) => {
     setStudyStats(prev => ({ ...prev, [difficulty]: prev[difficulty] + 1 }));
     const xpMap = { hard: 30, medium: 20, easy: 10 };
-    addXP(xpMap[difficulty]);
+    addXP(xpMap[difficulty], 'flashcard_study');
     
     const deckCards = flashcards.filter(card => card.deckId === selectedDeck.id);
     

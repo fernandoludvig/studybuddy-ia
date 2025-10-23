@@ -52,15 +52,30 @@ const useStore = create(
       // Actions
       setUser: (userData) => set({ user: { ...get().user, ...userData } }),
       
-      addXP: (amount) => set((state) => {
+      addXP: (amount, source = 'unknown') => set((state) => {
         const newXP = state.user.xp + amount;
         const newLevel = Math.floor(newXP / 100) + 1;
+        
+        // Adiciona atividade ao histórico
+        const activity = {
+          type: 'xp_gain',
+          description: `Ganhou ${amount} XP`,
+          xp: amount,
+          source: source,
+          date: new Date().toISOString(),
+          id: crypto.randomUUID(),
+        };
+        
         return {
           user: {
             ...state.user,
             xp: newXP,
             level: newLevel,
-          }
+          },
+          activityHistory: [
+            ...state.activityHistory,
+            activity
+          ].slice(-100), // Mantém últimas 100 atividades
         };
       }),
       
