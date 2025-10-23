@@ -775,8 +775,17 @@ export default function StudyPlanner() {
                   } else {
                     // Se há apenas uma matéria, gerar quiz diretamente
                     const subject = Array.from(allSubjects)[0] || 'História';
-                    const topic = Array.from(allTopics)[0] || 'Geral';
-                    const quizTopic = `${subject} - ${topic}`;
+                    
+                    // Pegar o primeiro tópico específico, não "Geral"
+                    let specificTopic = Array.from(allTopics).find(topic => 
+                      topic.toLowerCase() !== 'geral' && 
+                      topic.toLowerCase() !== 'revisão' &&
+                      topic.toLowerCase() !== 'revisão da semana' &&
+                      topic.toLowerCase() !== 'revisão geral' &&
+                      topic.toLowerCase() !== 'conexões entre tópicos'
+                    ) || Array.from(allTopics)[0] || 'Geral';
+                    
+                    const quizTopic = `${subject} - ${specificTopic}`;
                     console.log('📝 Tópico gerado (única matéria):', quizTopic);
                     generateQuiz(quizTopic);
                   }
