@@ -48,6 +48,9 @@ const useStore = create(
           activityHistory: [],
           studySessions: [],
           achievements: [],
+          
+          // Histórico de quizzes
+          quizHistory: [],
       
       // Actions
       setUser: (userData) => set({ user: { ...get().user, ...userData } }),
@@ -423,6 +426,18 @@ const useStore = create(
           achievements: [...state.achievements, { ...achievement, unlockedAt: new Date().toISOString() }],
         };
       }),
+      
+      // Actions para quizzes
+      addQuizResult: (quizResult) => set((state) => ({
+        quizHistory: [
+          ...state.quizHistory,
+          {
+            ...quizResult,
+            id: crypto.randomUUID(),
+            completedAt: new Date().toISOString(),
+          }
+        ].slice(-50), // Mantém últimos 50 quizzes
+      })),
     }),
     {
       name: 'studybuddy-storage',
