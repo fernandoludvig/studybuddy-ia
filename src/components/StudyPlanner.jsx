@@ -37,6 +37,12 @@ export default function StudyPlanner() {
   const [quizCompleted, setQuizCompleted] = useState(false);
   const [quizHistory, setQuizHistory] = useState([]);
   
+  // Estados para múltiplos quizzes
+  const [showQuizSelection, setShowQuizSelection] = useState(false);
+  const [availableQuizzes, setAvailableQuizzes] = useState([]);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [quizSequence, setQuizSequence] = useState([]);
+  
   // Debug: forçar re-renderização quando currentPlan muda
   useEffect(() => {
     console.log('🔄 CurrentPlan atualizado:', currentPlan);
@@ -239,6 +245,45 @@ export default function StudyPlanner() {
     setQuizCompleted(false);
     setSelectedAnswer(null);
     setQuizTopic('');
+    setShowQuizSelection(false);
+    setAvailableQuizzes([]);
+    setCurrentQuizIndex(0);
+    setQuizSequence([]);
+  };
+
+  const handleQuizSelection = (selectedQuizzes) => {
+    setQuizSequence(selectedQuizzes);
+    setCurrentQuizIndex(0);
+    setShowQuizSelection(false);
+    
+    if (selectedQuizzes.length > 0) {
+      const firstQuiz = selectedQuizzes[0];
+      const topic = `${firstQuiz.subject} - ${firstQuiz.topics[0]}`;
+      generateQuiz(topic);
+    }
+  };
+
+  const handleNextQuiz = () => {
+    if (currentQuizIndex < quizSequence.length - 1) {
+      const nextIndex = currentQuizIndex + 1;
+      setCurrentQuizIndex(nextIndex);
+      
+      const nextQuiz = quizSequence[nextIndex];
+      const topic = `${nextQuiz.subject} - ${nextQuiz.topics[0]}`;
+      
+      // Resetar estados do quiz
+      setQuiz(null);
+      setCurrentQuestion(0);
+      setQuizAnswers([]);
+      setShowQuizResult(false);
+      setQuizCompleted(false);
+      setSelectedAnswer(null);
+      
+      generateQuiz(topic);
+    } else {
+      // Todos os quizzes foram completados
+      restartQuiz();
+    }
   };
 
   const handleSaveNote = (planId, weekIndex, dayIndex) => {
@@ -686,38 +731,50 @@ export default function StudyPlanner() {
                     return;
                   }
                   
-                  // Construir tópico de forma segura usando diferentes propriedades possíveis
-                  let topic = '';
+                  // Coletar todas as matérias e tópicos únicos dos dias
+                  const allSubjects = new Set();
+                  const allTopics = new Set();
                   
-                  // Tentar diferentes propriedades que podem conter as matérias
-                  if (currentPlan.subjects && currentPlan.subjects.length > 0) {
-                    topic = currentPlan.subjects[0];
-                  } else if (currentPlan.subject && currentPlan.subject.length > 0) {
-                    topic = currentPlan.subject[0];
-                  } else if (currentPlan.materias && currentPlan.materias.length > 0) {
-                    topic = currentPlan.materias[0];
-                  } else if (currentPlan.title) {
-                    // Usar o título do plano como fallback
-                    topic = currentPlan.title;
-                  } else {
-                    topic = 'História do Brasil';
+                  if (currentPlan.schedule && currentPlan.schedule.length > 0) {
+                    currentPlan.schedule.forEach(week => {
+                      if (week.days && week.days.length > 0) {
+                        week.days.forEach(day => {
+                          if (day.subjects && day.subjects.length > 0) {
+                            day.subjects.forEach(subject => allSubjects.add(subject));
+                          }
+                          if (day.topics && day.topics.length > 0) {
+                            day.topics.forEach(topic => allTopics.add(topic));
+                          }
+                        });
+                      }
+                    });
                   }
                   
-                  // Tentar adicionar tópico específico se disponível
-                  if (currentPlan.schedule && currentPlan.schedule.length > 0 && 
-                      currentPlan.schedule[0].days && currentPlan.schedule[0].days.length > 0 &&
-                      currentPlan.schedule[0].days[0].topics && currentPlan.schedule[0].days[0].topics.length > 0) {
-                    topic += ' - ' + currentPlan.schedule[0].days[0].topics[0];
-                  } else if (currentPlan.schedule && currentPlan.schedule.length > 0 && 
-                      currentPlan.schedule[0].days && currentPlan.schedule[0].days.length > 0 &&
-                      currentPlan.schedule[0].days[0].subjects && currentPlan.schedule[0].days[0].subjects.length > 0) {
-                    topic += ' - ' + currentPlan.schedule[0].days[0].subjects[0];
+                  // Se há múltiplas matérias, mostrar seleção
+                  if (allSubjects.size > 1) {
+                    const quizOptions = Array.from(allSubjects).map(subject => {
+                      // Encontrar tópicos relacionados a esta matéria
+                      const relatedTopics = Array.from(allTopics).filter(topic => 
+                        topic.toLowerCase().includes(subject.toLowerCase()) ||
+                        subject.toLowerCase().includes(topic.toLowerCase())
+                      );
+                      
+                      return {
+                        subject: subject,
+                        topics: relatedTopics.length > 0 ? relatedTopics : ['Geral']
+                      };
+                    });
+                    
+                    setAvailableQuizzes(quizOptions);
+                    setShowQuizSelection(true);
                   } else {
-                    topic += ' - Geral';
+                    // Se há apenas uma matéria, gerar quiz diretamente
+                    const subject = Array.from(allSubjects)[0] || 'Geral';
+                    const topic = Array.from(allTopics)[0] || 'Geral';
+                    const quizTopic = `${subject} - ${topic}`;
+                    console.log('📝 Tópico gerado (única matéria):', quizTopic);
+                    generateQuiz(quizTopic);
                   }
-                  
-                  console.log('📝 Tópico gerado:', topic);
-                  generateQuiz(topic);
                 }}
                 className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 hover:text-indigo-300 flex items-center gap-2"
                 disabled={quizLoading}
@@ -1057,6 +1114,60 @@ export default function StudyPlanner() {
           })}
         </div>
 
+        {/* Seleção de Quiz */}
+        {showQuizSelection && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass p-8"
+          >
+            <h2 className="text-xl font-bold mb-6">Escolha o Quiz</h2>
+            <p className="text-gray-400 mb-6">Detectamos múltiplas matérias no seu plano. Escolha qual quiz fazer:</p>
+            
+            <div className="space-y-4">
+              {availableQuizzes.map((quizOption, index) => (
+                <div key={index} className="bg-white/5 border border-white/10 rounded-xl p-4">
+                  <h3 className="font-semibold text-indigo-400 mb-2">{quizOption.subject}</h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    Tópicos: {quizOption.topics.join(', ')}
+                  </p>
+                  <button
+                    onClick={() => handleQuizSelection([quizOption])}
+                    className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 hover:text-indigo-300 flex items-center gap-2"
+                  >
+                    <HelpCircle size={16} />
+                    Quiz de {quizOption.subject}
+                  </button>
+                </div>
+              ))}
+              
+              {/* Opção para fazer ambos */}
+              {availableQuizzes.length > 1 && (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4">
+                  <h3 className="font-semibold text-green-400 mb-2">Todos os Quizzes</h3>
+                  <p className="text-sm text-gray-400 mb-3">
+                    Fazer quiz de todas as matérias sequencialmente
+                  </p>
+                  <button
+                    onClick={() => handleQuizSelection(availableQuizzes)}
+                    className="px-4 py-2 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-lg text-green-400 hover:text-green-300 flex items-center gap-2"
+                  >
+                    <HelpCircle size={16} />
+                    Fazer Todos os Quizzes
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            <button
+              onClick={() => setShowQuizSelection(false)}
+              className="mt-6 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
+            >
+              Cancelar
+            </button>
+          </motion.div>
+        )}
+
         {/* Interface do Quiz - DENTRO DO PLANO */}
         {console.log('🔍 Estado do quiz no plano:', { quiz: !!quiz, quizCompleted, quizLoading, quizTopic })}
         
@@ -1211,13 +1322,23 @@ export default function StudyPlanner() {
                   </div>
 
                   <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={restartQuiz}
-                      className="px-6 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-xl flex items-center gap-2"
-                    >
-                      <Play size={18} />
-                      Gerar Novo Quiz
-                    </button>
+                    {quizSequence.length > 1 && currentQuizIndex < quizSequence.length - 1 ? (
+                      <button
+                        onClick={handleNextQuiz}
+                        className="px-6 py-3 bg-green-500/20 hover:bg-green-500/30 border border-green-500/50 rounded-xl flex items-center gap-2"
+                      >
+                        <Play size={18} />
+                        Próximo Quiz ({currentQuizIndex + 2}/{quizSequence.length})
+                      </button>
+                    ) : (
+                      <button
+                        onClick={restartQuiz}
+                        className="px-6 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-xl flex items-center gap-2"
+                      >
+                        <Play size={18} />
+                        Gerar Novo Quiz
+                      </button>
+                    )}
                   </div>
                 </>
               );
