@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Calendar, BookOpen, Target, Loader2, CheckCircle, Circle, StickyNote, Trash2, Edit3, X, ChevronDown, ChevronUp, HelpCircle, Play, Trophy } from 'lucide-react';
+import { Sparkles, Calendar, BookOpen, Target, Loader2, CheckCircle, Circle, StickyNote, Trash2, Edit3, X, ChevronDown, ChevronUp, HelpCircle, Play, Trophy, XCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
 import { generateStudyPlan } from '../services/aiService';
@@ -141,6 +141,9 @@ export default function StudyPlanner() {
       const data = await response.json();
       console.log('✅ Quiz gerado:', data);
       setQuiz(data);
+      
+      // Mostrar mensagem de sucesso
+      alert(`🎉 Quiz criado com sucesso! ${data.quiz.length} questões sobre "${topic}"`);
       
       // Adicionar atividade ao histórico
       addActivityToHistory({
@@ -1005,25 +1008,6 @@ export default function StudyPlanner() {
           })}
         </div>
 
-        {/* Dicas */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="glass p-6"
-        >
-          <h3 className="text-xl font-bold mb-4">💡 Dicas Personalizadas</h3>
-          <div className="grid gap-3">
-            {currentPlan.tips.map((tip, idx) => (
-              <div
-                key={`tip-${idx}`}
-                className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-4"
-              >
-                <p className="text-gray-200">{tip}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
         {/* Interface do Quiz - DENTRO DO PLANO */}
         {console.log('🔍 Estado do quiz no plano:', { quiz: !!quiz, quizCompleted, quizLoading, quizTopic })}
         
@@ -1191,6 +1175,25 @@ export default function StudyPlanner() {
             })()}
           </motion.div>
         )}
+
+        {/* Dicas personalizadas */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass p-6"
+        >
+          <h3 className="text-xl font-bold mb-4">💡 Dicas Personalizadas</h3>
+          <div className="grid gap-3">
+            {currentPlan.tips.map((tip, idx) => (
+              <div
+                key={`tip-${idx}`}
+                className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-xl p-4"
+              >
+                <p className="text-gray-200">{tip}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
       </div>
     );
   }
