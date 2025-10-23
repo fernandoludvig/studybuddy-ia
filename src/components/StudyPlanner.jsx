@@ -661,7 +661,35 @@ export default function StudyPlanner() {
             <div className="flex gap-2">
               <button
                 onClick={() => {
-                  const topic = currentPlan.subjects[0] + ' - ' + (currentPlan.schedule[0]?.days[0]?.topics[0] || 'Geral') || currentPlan.subjects[0] || 'Tópico do plano';
+                  console.log('🎯 Botão Gerar Quiz clicado!');
+                  console.log('📊 CurrentPlan:', currentPlan);
+                  
+                  // Verificar se currentPlan existe e tem as propriedades necessárias
+                  if (!currentPlan) {
+                    console.error('❌ CurrentPlan não existe');
+                    alert('❌ Erro: Plano não encontrado');
+                    return;
+                  }
+                  
+                  if (!currentPlan.subjects || currentPlan.subjects.length === 0) {
+                    console.error('❌ CurrentPlan não tem subjects');
+                    alert('❌ Erro: Plano não tem matérias definidas');
+                    return;
+                  }
+                  
+                  // Construir tópico de forma segura
+                  let topic = currentPlan.subjects[0];
+                  
+                  // Tentar adicionar tópico específico se disponível
+                  if (currentPlan.schedule && currentPlan.schedule.length > 0 && 
+                      currentPlan.schedule[0].days && currentPlan.schedule[0].days.length > 0 &&
+                      currentPlan.schedule[0].days[0].topics && currentPlan.schedule[0].days[0].topics.length > 0) {
+                    topic += ' - ' + currentPlan.schedule[0].days[0].topics[0];
+                  } else {
+                    topic += ' - Geral';
+                  }
+                  
+                  console.log('📝 Tópico gerado:', topic);
                   generateQuiz(topic);
                 }}
                 className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 hover:text-indigo-300 flex items-center gap-2"
