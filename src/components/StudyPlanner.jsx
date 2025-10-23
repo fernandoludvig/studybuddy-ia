@@ -547,7 +547,7 @@ export default function StudyPlanner() {
             </div>
 
             {/* Estatísticas */}
-            <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-4 gap-4 mb-4">
               <div className="bg-white/5 rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold text-indigo-400">{currentPlan.schedule.length}</div>
                 <div className="text-sm text-gray-400">Semanas</div>
@@ -575,7 +575,7 @@ export default function StudyPlanner() {
         </motion.div>
 
         {/* Cronograma por semana */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           {currentPlan.schedule.map((week, weekIndex) => {
             const isExpanded = expandedWeeks.includes(weekIndex);
             const weekCompleted = week.days.every(d => d.completed);
