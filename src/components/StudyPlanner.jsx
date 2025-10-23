@@ -35,6 +35,7 @@ export default function StudyPlanner() {
   const [quizAnswers, setQuizAnswers] = useState([]);
   const [showQuizResult, setShowQuizResult] = useState(false);
   const [quizCompleted, setQuizCompleted] = useState(false);
+  const [quizHistory, setQuizHistory] = useState([]);
   
   // Debug: forçar re-renderização quando currentPlan muda
   useEffect(() => {
@@ -98,8 +99,8 @@ export default function StudyPlanner() {
   };
 
   // Funções do Quiz
-  const generateQuiz = async (topic) => {
-    console.log('🎯 generateQuiz chamado com tópico:', topic);
+  const generateQuiz = async (topic, numberOfQuestions = 10) => {
+    console.log('🎯 generateQuiz chamado com tópico:', topic, 'e', numberOfQuestions, 'questões');
     
     if (!topic.trim()) {
       alert('Digite um tópico para o quiz!');
@@ -126,7 +127,7 @@ export default function StudyPlanner() {
         },
         body: JSON.stringify({
           topic: topic,
-          numberOfQuestions: 10
+          numberOfQuestions: numberOfQuestions
         }),
       });
 
@@ -211,6 +212,20 @@ export default function StudyPlanner() {
       answers: finalAnswers,
       quiz: quiz.quiz
     });
+
+    // Salvar no histórico local
+    const quizResult = {
+      id: Date.now(),
+      topic: quizTopic,
+      totalQuestions: quiz.quiz.length,
+      correctAnswers: correctAnswers,
+      percentage: percentage,
+      xpEarned: xpEarned,
+      completedAt: new Date().toISOString(),
+      quiz: quiz.quiz
+    };
+    
+    setQuizHistory(prev => [...prev, quizResult]);
 
     setQuizCompleted(true);
     setShowQuizResult(true);
@@ -1028,6 +1043,25 @@ export default function StudyPlanner() {
                                       </button>
                                     )}
                                     
+                                    {/* Botão Gerar Quiz do Dia */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const topic = day.topics[0] || day.subjects[0] || 'Tópico do dia';
+                                        console.log('🎯 Gerar Quiz do Dia:', topic);
+                                        generateQuiz(topic, 5); // 5 questões para quiz do dia
+                                      }}
+                                      className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-2 px-3 py-2 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 border border-indigo-500/30"
+                                      disabled={quizLoading}
+                                    >
+                                      {quizLoading ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                      ) : (
+                                        <HelpCircle size={14} />
+                                      )}
+                                      Gerar Quiz (5 questões)
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -1202,12 +1236,50 @@ export default function StudyPlanner() {
                       className="px-6 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-xl flex items-center gap-2"
                     >
                       <Play size={18} />
-                      Novo Quiz
+                      Gerar Novo Quiz
                     </button>
                   </div>
                 </>
               );
             })()}
+          </motion.div>
+        )}
+
+        {/* Histórico de Quizzes */}
+        {quizHistory.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass p-6"
+          >
+            <h3 className="text-xl font-bold mb-4">📊 Histórico de Quizzes</h3>
+            <div className="space-y-3">
+              {quizHistory.slice(-5).reverse().map((quizResult) => (
+                <div
+                  key={quizResult.id}
+                  className="bg-white/5 border border-white/10 rounded-xl p-4"
+                >
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <h4 className="font-semibold text-indigo-400">{quizResult.topic}</h4>
+                      <p className="text-sm text-gray-400">
+                        {new Date(quizResult.completedAt).toLocaleDateString('pt-BR')}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-green-400">{quizResult.percentage}%</div>
+                      <div className="text-sm text-gray-400">
+                        {quizResult.correctAnswers}/{quizResult.totalQuestions}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-yellow-400">+{quizResult.xpEarned} XP</span>
+                    <span className="text-gray-400">{quizResult.totalQuestions} questões</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </motion.div>
         )}
 
