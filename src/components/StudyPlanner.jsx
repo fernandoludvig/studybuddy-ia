@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Sparkles, Calendar, BookOpen, Target, Loader2, CheckCircle, Circle, StickyNote, Trash2, Edit3, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, Calendar, BookOpen, Target, Loader2, CheckCircle, Circle, StickyNote, Trash2, Edit3, X, ChevronDown, ChevronUp, HelpCircle, Play, Trophy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useStore from '../store/useStore';
 import { generateStudyPlan } from '../services/aiService';
@@ -14,7 +14,9 @@ export default function StudyPlanner() {
     toggleTopicComplete, 
     addNoteToDay,
     deleteStudyPlan,
-    addXP 
+    addXP,
+    addActivityToHistory,
+    addQuizResult
   } = useStore();
   
   const [loading, setLoading] = useState(false);
@@ -23,6 +25,16 @@ export default function StudyPlanner() {
   const [editingNote, setEditingNote] = useState(null);
   const [noteText, setNoteText] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
+  
+  // Estados do Quiz
+  const [quiz, setQuiz] = useState(null);
+  const [quizLoading, setQuizLoading] = useState(false);
+  const [quizTopic, setQuizTopic] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [quizAnswers, setQuizAnswers] = useState([]);
+  const [showQuizResult, setShowQuizResult] = useState(false);
+  const [quizCompleted, setQuizCompleted] = useState(false);
   
   // Debug: forçar re-renderização quando currentPlan muda
   useEffect(() => {
@@ -83,6 +95,125 @@ export default function StudyPlanner() {
         ? prev.filter(w => w !== weekIndex)
         : [...prev, weekIndex]
     );
+  };
+
+  // Funções do Quiz
+  const generateQuiz = async (topic) => {
+    if (!topic.trim()) {
+      alert('Digite um tópico para o quiz!');
+      return;
+    }
+
+    setQuizLoading(true);
+    setQuiz(null);
+    setCurrentQuestion(0);
+    setQuizAnswers([]);
+    setShowQuizResult(false);
+    setQuizCompleted(false);
+    setQuizTopic(topic);
+
+    try {
+      const isProduction = window.location.hostname !== 'localhost';
+      const apiUrl = isProduction 
+        ? '/api/generate-quiz'
+        : 'http://localhost:3001/api/generate-quiz';
+      
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          topic: topic,
+          numberOfQuestions: 10
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setQuiz(data);
+      
+      // Adicionar atividade ao histórico
+      addActivityToHistory({
+        type: 'quiz_started',
+        description: `Iniciou quiz sobre: ${topic}`,
+        xp: 0,
+        source: 'quiz_generation'
+      });
+
+    } catch (error) {
+      console.error('Erro ao gerar quiz:', error);
+      alert(`❌ Erro ao gerar quiz: ${error.message}`);
+    } finally {
+      setQuizLoading(false);
+    }
+  };
+
+  const handleQuizAnswer = (answerIndex) => {
+    setSelectedAnswer(answerIndex);
+    
+    const newAnswers = [...quizAnswers];
+    newAnswers[currentQuestion] = answerIndex;
+    setQuizAnswers(newAnswers);
+
+    // Feedback visual
+    setTimeout(() => {
+      if (currentQuestion < quiz.quiz.length - 1) {
+        setCurrentQuestion(currentQuestion + 1);
+        setSelectedAnswer(null);
+      } else {
+        // Quiz finalizado
+        finishQuiz(newAnswers);
+      }
+    }, 1500);
+  };
+
+  const finishQuiz = (finalAnswers) => {
+    const correctAnswers = quiz.quiz.filter((question, index) => 
+      question.correct === finalAnswers[index]
+    ).length;
+
+    const score = correctAnswers;
+    const percentage = Math.round((score / quiz.quiz.length) * 100);
+    const xpEarned = score * 10; // 10 XP por questão certa
+
+    // Adicionar XP
+    addXP(xpEarned, 'quiz_completed');
+    
+    // Adicionar atividade ao histórico
+    addActivityToHistory({
+      type: 'quiz_completed',
+      description: `Completou quiz sobre: ${quizTopic} - ${percentage}% de acerto`,
+      xp: xpEarned,
+      source: 'quiz_completion'
+    });
+
+    // Salvar resultado do quiz
+    addQuizResult({
+      topic: quizTopic,
+      totalQuestions: quiz.quiz.length,
+      correctAnswers: correctAnswers,
+      percentage: percentage,
+      xpEarned: xpEarned,
+      answers: finalAnswers,
+      quiz: quiz.quiz
+    });
+
+    setQuizCompleted(true);
+    setShowQuizResult(true);
+  };
+
+  const restartQuiz = () => {
+    setQuiz(null);
+    setCurrentQuestion(0);
+    setQuizAnswers([]);
+    setShowQuizResult(false);
+    setQuizCompleted(false);
+    setSelectedAnswer(null);
+    setQuizTopic('');
   };
 
   const handleSaveNote = (planId, weekIndex, dayIndex) => {
@@ -831,6 +962,25 @@ export default function StudyPlanner() {
                                         Adicionar nota
                                       </button>
                                     )}
+                                    
+                                    {/* Botão Gerar Quiz */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const topic = day.subjects[0] + ' - ' + (day.topics[0] || 'Geral') || day.subjects[0] || 'Tópico do dia';
+                                        generateQuiz(topic);
+                                      }}
+                                      className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-2 px-3 py-2 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 border border-indigo-500/30"
+                                      disabled={quizLoading}
+                                    >
+                                      {quizLoading ? (
+                                        <Loader2 size={14} className="animate-spin" />
+                                      ) : (
+                                        <HelpCircle size={14} />
+                                      )}
+                                      Gerar Quiz
+                                    </button>
                                   </div>
                                 </div>
                               </div>
@@ -1008,6 +1158,158 @@ export default function StudyPlanner() {
           </button>
         </form>
       </motion.div>
+
+      {/* Interface do Quiz */}
+      {quiz && !quizCompleted && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass p-8"
+        >
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold">Quiz: {quizTopic}</h2>
+              <p className="text-gray-400 text-sm">Questão {currentQuestion + 1} de {quiz.quiz.length}</p>
+            </div>
+            <button
+              onClick={restartQuiz}
+              className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg"
+            >
+              Cancelar
+            </button>
+          </div>
+          
+          {/* Barra de progresso */}
+          <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
+            <motion.div
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full"
+              initial={{ width: 0 }}
+              animate={{ width: `${((currentQuestion + 1) / quiz.quiz.length) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+
+          {/* Questão atual */}
+          <motion.div
+            key={currentQuestion}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-4"
+          >
+            <h3 className="text-xl font-bold">{quiz.quiz[currentQuestion].question}</h3>
+            
+            <div className="space-y-3">
+              {quiz.quiz[currentQuestion].options.map((option, index) => {
+                const isSelected = selectedAnswer === index;
+                const isCorrect = index === quiz.quiz[currentQuestion].correct;
+                
+                let bgColor = 'bg-white/5 hover:bg-white/10';
+                if (selectedAnswer !== null) {
+                  if (isCorrect) {
+                    bgColor = 'bg-green-500/20 border-green-500/50';
+                  } else if (isSelected && !isCorrect) {
+                    bgColor = 'bg-red-500/20 border-red-500/50';
+                  }
+                }
+
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleQuizAnswer(index)}
+                    disabled={selectedAnswer !== null}
+                    className={`w-full p-4 rounded-xl border border-white/10 text-left transition-all ${bgColor} ${
+                      selectedAnswer === null ? 'hover:border-indigo-500/50' : ''
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                        selectedAnswer !== null && isCorrect
+                          ? 'bg-green-500 border-green-500'
+                          : selectedAnswer === index && !isCorrect
+                          ? 'bg-red-500 border-red-500'
+                          : 'border-white/30'
+                      }`}>
+                        {selectedAnswer !== null && isCorrect && (
+                          <CheckCircle size={16} className="text-white" />
+                        )}
+                        {selectedAnswer === index && !isCorrect && (
+                          <XCircle size={16} className="text-white" />
+                        )}
+                      </div>
+                      <span className="flex-1">{option}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Explicação (após responder) */}
+            {selectedAnswer !== null && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl"
+              >
+                <h4 className="font-semibold text-blue-400 mb-2">💡 Explicação:</h4>
+                <p className="text-gray-300">{quiz.quiz[currentQuestion].explanation}</p>
+              </motion.div>
+            )}
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Resultado do Quiz */}
+      {quizCompleted && showQuizResult && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass p-8 text-center"
+        >
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+            <Trophy size={48} className="text-white" />
+          </div>
+          
+          <h2 className="text-3xl font-bold mb-4">Quiz Concluído! 🎉</h2>
+          
+          {(() => {
+            const correctAnswers = quiz.quiz.filter((question, index) => 
+              question.correct === quizAnswers[index]
+            ).length;
+            const percentage = Math.round((correctAnswers / quiz.quiz.length) * 100);
+            const xpEarned = correctAnswers * 10;
+
+            return (
+              <>
+                <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="bg-white/5 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-green-400">{correctAnswers}</div>
+                    <div className="text-sm text-gray-400">Acertos</div>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-indigo-400">{percentage}%</div>
+                    <div className="text-sm text-gray-400">Precisão</div>
+                  </div>
+                  <div className="bg-white/5 rounded-xl p-4">
+                    <div className="text-2xl font-bold text-yellow-400">+{xpEarned}</div>
+                    <div className="text-sm text-gray-400">XP Ganho</div>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={restartQuiz}
+                    className="px-6 py-3 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-xl flex items-center gap-2"
+                  >
+                    <Play size={18} />
+                    Novo Quiz
+                  </button>
+                </div>
+              </>
+            );
+          })()}
+        </motion.div>
+      )}
     </div>
   );
 }

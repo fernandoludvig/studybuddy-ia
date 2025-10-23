@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { BookOpen, Timer, Brain, Trophy, BarChart3, HelpCircle } from 'lucide-react';
+import { BookOpen, Timer, Brain, Trophy, BarChart3 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import StudyPlanner from './components/StudyPlanner';
 import PomodoroTimer from './components/PomodoroTimer';
 import Flashcards from './components/Flashcards';
 import Progress from './components/Progress';
-import Quiz from './components/Quiz';
 import Onboarding from './components/Onboarding';
 import useStore from './store/useStore';
 
@@ -23,7 +22,6 @@ function App() {
     { id: 'planner', label: 'Plano de Estudos', icon: BookOpen },
     { id: 'pomodoro', label: 'Pomodoro', icon: Timer },
     { id: 'flashcards', label: 'Flashcards', icon: Brain },
-    { id: 'quiz', label: 'Quiz', icon: HelpCircle },
     { id: 'progress', label: 'Progresso', icon: Trophy },
   ];
 
@@ -33,7 +31,6 @@ function App() {
       case 'planner': return <StudyPlanner />;
       case 'pomodoro': return <PomodoroTimer />;
       case 'flashcards': return <Flashcards />;
-      case 'quiz': return <Quiz />;
       case 'progress': return <Progress />;
       default: return <Dashboard onNavigate={setActiveTab} />;
     }
