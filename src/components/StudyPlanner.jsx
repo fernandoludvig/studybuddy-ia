@@ -113,10 +113,7 @@ export default function StudyPlanner() {
     setQuizTopic(topic);
 
     try {
-      const isProduction = window.location.hostname !== 'localhost';
-      const apiUrl = isProduction 
-        ? '/api/generate-quiz'
-        : 'http://localhost:3001/api/generate-quiz';
+      const apiUrl = '/api/generate-quiz';
       
       const response = await fetch(apiUrl, {
         method: 'POST',

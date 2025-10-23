@@ -26,6 +26,14 @@ export default async function handler(req, res) {
 
     console.log(`🔍 Gerando quiz de ${numberOfQuestions} questões sobre: ${topic}`);
 
+    // Verificar se a API key está disponível
+    const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || process.env.VITE_ANTHROPIC_API_KEY;
+    
+    if (!ANTHROPIC_API_KEY) {
+      console.error('❌ API Key não configurada');
+      return res.status(500).json({ error: 'API Key não configurada' });
+    }
+
     // Gerar prompt para a IA
     const prompt = `Crie ${numberOfQuestions} questões de múltipla escolha sobre o tópico "${topic}".
 
@@ -59,7 +67,7 @@ NOTA: O campo "correct" deve ser o índice da alternativa correta (0=A, 1=B, 2=C
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.VITE_ANTHROPIC_API_KEY,
+        'x-api-key': ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
