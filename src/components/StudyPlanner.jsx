@@ -1120,6 +1120,7 @@ export default function StudyPlanner() {
         </div>
 
         {/* Seleção de Quiz */}
+        {console.log('🔍 showQuizSelection:', showQuizSelection, 'availableQuizzes:', availableQuizzes)}
         {showQuizSelection && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
