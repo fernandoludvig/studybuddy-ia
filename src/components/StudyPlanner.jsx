@@ -660,6 +660,21 @@ export default function StudyPlanner() {
             </button>
             <div className="flex gap-2">
               <button
+                onClick={() => {
+                  const topic = currentPlan.subjects[0] + ' - ' + (currentPlan.schedule[0]?.days[0]?.topics[0] || 'Geral') || currentPlan.subjects[0] || 'Tópico do plano';
+                  generateQuiz(topic);
+                }}
+                className="px-4 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 hover:text-indigo-300 flex items-center gap-2"
+                disabled={quizLoading}
+              >
+                {quizLoading ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <HelpCircle size={16} />
+                )}
+                Gerar Quiz
+              </button>
+              <button
                 onClick={() => deleteStudyPlan(currentPlan.id)}
                 className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 rounded-xl flex items-center gap-2"
               >
@@ -669,11 +684,11 @@ export default function StudyPlanner() {
           </div>
           
           <div id={`plan-${currentPlan.id}`} className="export-container">
-            <h2 className="text-3xl font-bold mb-2">{currentPlan.title}</h2>
-            <p className="text-gray-300 mb-4">{currentPlan.overview}</p>
+            <h2 className="text-3xl font-bold mb-1">{currentPlan.title}</h2>
+            <p className="text-gray-300 mb-2">{currentPlan.overview}</p>
 
             {/* Progresso geral */}
-            <div className="mb-4">
+            <div className="mb-2">
               <div className="flex justify-between mb-2">
                 <span className="text-sm font-medium">Progresso Total</span>
                 <span className="text-sm font-medium">{progress}%</span>
@@ -973,26 +988,6 @@ export default function StudyPlanner() {
                                       </button>
                                     )}
                                     
-                                    {/* Botão Gerar Quiz */}
-                                    <button
-                                      onClick={(e) => {
-                                        console.log('🎯 Botão Gerar Quiz clicado!');
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        const topic = day.subjects[0] + ' - ' + (day.topics[0] || 'Geral') || day.subjects[0] || 'Tópico do dia';
-                                        console.log('📝 Tópico gerado:', topic);
-                                        generateQuiz(topic);
-                                      }}
-                                      className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-2 px-3 py-2 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 border border-indigo-500/30"
-                                      disabled={quizLoading}
-                                    >
-                                      {quizLoading ? (
-                                        <Loader2 size={14} className="animate-spin" />
-                                      ) : (
-                                        <HelpCircle size={14} />
-                                      )}
-                                      Gerar Quiz
-                                    </button>
                                   </div>
                                 </div>
                               </div>
