@@ -99,11 +99,14 @@ export default function StudyPlanner() {
 
   // Funções do Quiz
   const generateQuiz = async (topic) => {
+    console.log('🎯 generateQuiz chamado com tópico:', topic);
+    
     if (!topic.trim()) {
       alert('Digite um tópico para o quiz!');
       return;
     }
 
+    console.log('🔄 Iniciando geração de quiz...');
     setQuizLoading(true);
     setQuiz(null);
     setCurrentQuestion(0);
@@ -114,6 +117,7 @@ export default function StudyPlanner() {
 
     try {
       const apiUrl = '/api/generate-quiz';
+      console.log('📡 Fazendo requisição para:', apiUrl);
       
       const response = await fetch(apiUrl, {
         method: 'POST',
@@ -126,11 +130,16 @@ export default function StudyPlanner() {
         }),
       });
 
+      console.log('📡 Resposta recebida:', response.status, response.statusText);
+
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Erro na resposta:', errorText);
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('✅ Quiz gerado:', data);
       setQuiz(data);
       
       // Adicionar atividade ao histórico
@@ -142,10 +151,11 @@ export default function StudyPlanner() {
       });
 
     } catch (error) {
-      console.error('Erro ao gerar quiz:', error);
+      console.error('❌ Erro ao gerar quiz:', error);
       alert(`❌ Erro ao gerar quiz: ${error.message}`);
     } finally {
       setQuizLoading(false);
+      console.log('🏁 Quiz loading finalizado');
     }
   };
 
@@ -963,9 +973,11 @@ export default function StudyPlanner() {
                                     {/* Botão Gerar Quiz */}
                                     <button
                                       onClick={(e) => {
+                                        console.log('🎯 Botão Gerar Quiz clicado!');
                                         e.preventDefault();
                                         e.stopPropagation();
                                         const topic = day.subjects[0] + ' - ' + (day.topics[0] || 'Geral') || day.subjects[0] || 'Tópico do dia';
+                                        console.log('📝 Tópico gerado:', topic);
                                         generateQuiz(topic);
                                       }}
                                       className="text-sm text-indigo-400 hover:text-indigo-300 flex items-center gap-1 mt-2 px-3 py-2 bg-indigo-500/10 rounded-lg hover:bg-indigo-500/20 border border-indigo-500/30"
@@ -1157,6 +1169,22 @@ export default function StudyPlanner() {
       </motion.div>
 
       {/* Interface do Quiz */}
+      {console.log('🔍 Estado do quiz:', { quiz: !!quiz, quizCompleted, quizLoading, quizTopic })}
+      
+      {/* Loading do Quiz */}
+      {quizLoading && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass p-8 text-center"
+        >
+          <div className="flex items-center justify-center gap-3">
+            <Loader2 size={24} className="animate-spin text-indigo-400" />
+            <span>Gerando quiz sobre: {quizTopic}</span>
+          </div>
+        </motion.div>
+      )}
+      
       {quiz && !quizCompleted && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
